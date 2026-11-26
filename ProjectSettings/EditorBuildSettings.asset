@@ -6,11 +6,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/_Museum/Halls/00_CentralHall/CentralHall.unity
+    guid: 0f8f8d7231c7247ee9bdc06cd181ef5a
+  - enabled: 1
     path: Assets/_Museum/Halls/04_DoNothing/DoNothing.unity
     guid: 30dccd3c835614e039d94aa12361ba9d
-  - enabled: 1
-    path: Assets/Scenes/XR_Base.unity
-    guid: 4ac2cfa58b4b8446a927772c1d86df85
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

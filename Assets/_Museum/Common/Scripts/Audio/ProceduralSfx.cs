@@ -163,5 +163,34 @@ namespace MuseumOfLies.Common
                 return env * (lp * 5f + 0.35f * Sin(38f, t) + 0.2f * Sin(55f, t));
             });
         }
+
+        /// <summary>Quiet museum room tone (air handling hum + soft air noise), loopable.</summary>
+        public static AudioClip RoomTone(float seconds = 6f)
+        {
+            var rng = new System.Random(101);
+            float lp = 0f;
+            return Make("sfx_roomtone", seconds, t =>
+            {
+                float n = (float)rng.NextDouble() * 2f - 1f;
+                lp += 0.015f * (n - lp);
+                return lp * 1.4f + 0.02f * Sin(60f, t) + 0.01f * Sin(120f, t);
+            });
+        }
+
+        /// <summary>Pneumatic sliding-door whoosh.</summary>
+        public static AudioClip DoorWhoosh(float seconds = 0.9f)
+        {
+            var rng = new System.Random(55);
+            float lp = 0f;
+            return Make("sfx_door", seconds, t =>
+            {
+                float n = (float)rng.NextDouble() * 2f - 1f;
+                float k = Mathf.Lerp(0.25f, 0.05f, t / seconds);
+                lp += k * (n - lp);
+                float env = Mathf.Clamp01(t / 0.06f) * Mathf.Exp(-t * 3.2f);
+                float clunk = t > seconds - 0.12f ? 0.25f * Mathf.Exp(-(t - (seconds - 0.12f)) * 40f) * Sin(90f, t) : 0f;
+                return env * lp * 1.6f + clunk;
+            });
+        }
 }
 }

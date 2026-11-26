@@ -12,12 +12,15 @@ namespace MuseumOfLies.Common
         public Transform head;
         public Transform leftHand;
         public Transform rightHand;
-        public bool disableLocomotion = true;
+        public enum LocomotionMode { None, TeleportAndSnapTurn }
+        [Tooltip("None = real head/body only (exhibit halls). TeleportAndSnapTurn = hub spaces (no smooth movement → less sickness)")]
+        public LocomotionMode locomotion = LocomotionMode.None;
 
         void Awake()
         {
             Resolve();
-            if (disableLocomotion) DisableLocomotion();
+            if (locomotion == LocomotionMode.None) DisableLocomotion();
+            else TeleportAndSnapTurnOnly();
         }
 
         public void Resolve()
@@ -42,6 +45,22 @@ namespace MuseumOfLies.Common
         }
 
         public void HapticBoth(float amplitude, float duration) { Haptic(leftHand, amplitude, duration); Haptic(rightHand, amplitude, duration); }
+
+        /// <summary>Keep teleport + snap turn; turn off smooth move, grab-move, climb, jump.</summary>
+        public void TeleportAndSnapTurnOnly()
+        {
+            if (origin == null) return;
+            var loco = origin.Find("Locomotion");
+            if (loco == null) return;
+            foreach (var n in new[] { "Move", "Grab Move", "Climb", "Jump" })
+            {
+                var c = loco.Find(n);
+                if (c != null) c.gameObject.SetActive(false);
+            }
+            var turn = loco.Find("Turn");
+            var cont = turn != null ? turn.GetComponent<UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning.ContinuousTurnProvider>() : null;
+            if (cont != null) cont.enabled = false;
+        }
 
         public void DisableLocomotion()
         {

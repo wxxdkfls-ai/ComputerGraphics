@@ -389,7 +389,9 @@ namespace MuseumOfLies.DoNothing.EditorTools
         {
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             list.RemoveAll(s => s.path == path);
-            list.Insert(0, new EditorBuildSettingsScene(path, true));
+            // keep the Central Hall as scene 0 (app entry); halls come after it
+            int hub = list.FindIndex(s => s.path.Contains("00_CentralHall"));
+            list.Insert(hub >= 0 ? hub + 1 : list.Count, new EditorBuildSettingsScene(path, true));
             EditorBuildSettings.scenes = list.ToArray();
         }
     }

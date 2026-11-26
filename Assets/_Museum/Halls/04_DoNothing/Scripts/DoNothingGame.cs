@@ -357,8 +357,9 @@ namespace MuseumOfLies.DoNothing
             _log?.Close();
             _log = null;
             onVisitComplete?.Invoke();
-            Debug.Log("[DoNothing] Visit complete — central hall transition goes here.");
-            EnterIntro();
+            MuseumSession.CompleteCurrentHall();
+            if (SceneTransition.CanLoad("CentralHall")) SceneTransition.Load("CentralHall");
+            else EnterIntro();
         }
 
         // ───────────────────────── Public API for stimuli ─────────────────────────
