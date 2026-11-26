@@ -138,7 +138,7 @@ namespace MuseumOfLies.DoNothing
             _hapticTimer -= Time.deltaTime;
             if (_hapticTimer <= 0f)
             {
-                Rig.Haptic(_hand, Random.Range(0.08f, 0.22f), 0.02f);
+                MuseumOfLies.Common.MuseumHaptics.Contact(_hand);
                 _hapticTimer = Random.Range(0.06f, 0.14f);
             }
 

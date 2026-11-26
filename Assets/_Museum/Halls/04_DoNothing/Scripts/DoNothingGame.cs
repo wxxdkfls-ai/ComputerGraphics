@@ -289,6 +289,7 @@ namespace MuseumOfLies.DoNothing
 
             foreach (var s in stimuli) s.ResetStimulus();
             if (uiAudio) uiAudio.PlayOneShot(_resetClip);
+            MuseumHaptics.Fail();
             if (timer)
             {
                 timer.SetState(TimerDisplay.State.Reset);
@@ -306,6 +307,7 @@ namespace MuseumOfLies.DoNothing
             if (!active) { _exitHold = 0f; SetExitProgress(0f); return; }
             _exitHold = _exitAction.IsPressed() ? _exitHold + Time.deltaTime : 0f;
             SetExitProgress(_exitHold / exitHoldSeconds);
+            if (_exitHold > 0f) MuseumHaptics.Progress(_exitHold / exitHoldSeconds);
             if (_exitHold >= exitHoldSeconds) EndSession(false);
         }
 
@@ -326,6 +328,7 @@ namespace MuseumOfLies.DoNothing
                 timer.SetStatus(success ? "✓  도전 성공" : "■  도전 종료");
             }
             if (success && uiAudio) uiAudio.PlayOneShot(_successClip);
+            if (success) MuseumHaptics.Success();
 
             if (resultPanel)
             {

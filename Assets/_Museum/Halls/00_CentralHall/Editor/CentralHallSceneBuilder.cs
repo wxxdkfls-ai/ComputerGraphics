@@ -6,7 +6,6 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
 namespace MuseumOfLies.CentralHall.EditorTools
@@ -16,7 +15,7 @@ namespace MuseumOfLies.CentralHall.EditorTools
     /// Monumental concrete atrium (18 × 24 m, 10 m ceiling): colonnade, grand staircase to the (locked) Truth Room,
     /// museum title wall, empty plinths, bench, and FOUR IDENTICAL automatic doors (2 per side wall).
     /// Which exhibition is behind which door is decided at runtime and never shown before entering.
-    /// Movement: teleport + snap turn only (no smooth locomotion → comfort).
+    /// Movement: left stick walk + right stick snap turn (no teleport).
     /// </summary>
     public static class CentralHallSceneBuilder
     {
@@ -46,7 +45,6 @@ namespace MuseumOfLies.CentralHall.EditorTools
 
             // ── floor / ceiling
             var floor = MuseumEnvironmentKit.WorldBox("Floor", room, new Vector3(0, -0.05f, 0), new Vector3(HalfW * 2, 0.1f, HalfD * 2), Env("FloorPolished"), MuseumEnvironmentKit.FloorTile);
-            floor.AddComponent<TeleportationArea>();
             MuseumEnvironmentKit.WorldBox("Ceiling", room, new Vector3(0, H + 0.05f, 0), new Vector3(HalfW * 2, 0.1f, HalfD * 2), Env("CeilingLight"), 1.8f);
 
             // ── north / south walls
@@ -120,6 +118,14 @@ namespace MuseumOfLies.CentralHall.EditorTools
                     gates.Add(BuildGate(gatesRoot, idx++, label, side, GateZ[i]));
                 }
 
+            // ── persistent how-to placard near the entrance (stays after the survey closes)
+            var guide = WorldText("HowToPlacard", room, new Vector3(-2.3f, 1.35f, -8.6f), 640, 300, MuseumUIBuilder.KrRegular, 30, MuseumPalette.Charcoal, TextAlignmentOptions.TopLeft,
+                "<size=24>HOW TO VISIT</size>\n<b>이동</b>  왼쪽 스틱\n<b>회전</b>  오른쪽 스틱\n<b>입장</b>  문 앞에 서면 열립니다 → 걸어 들어가기");
+            guide.lineSpacing = 10;
+            guide.transform.parent.localRotation = Quaternion.Euler(0, -25f, 0);
+            Placard(guide.transform.parent, 0.66f, 0.32f);
+            MuseumEnvironmentKit.WorldBox("HowToStand", room, new Vector3(-2.3f, 0.55f, -8.55f), new Vector3(0.06f, 1.1f, 0.06f), M("Charcoal"), 1f, true);
+
             // ── XR rig & systems
             var origin = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(XROriginPrefab));
             var spawn = new GameObject("Spawn_Entrance").transform;
@@ -130,7 +136,7 @@ namespace MuseumOfLies.CentralHall.EditorTools
             var systems = new GameObject("Systems");
             var rig = systems.AddComponent<XRRig>();
             rig.origin = origin.transform;
-            rig.locomotion = XRRig.LocomotionMode.TeleportAndSnapTurn;
+            rig.locomotion = XRRig.LocomotionMode.LeftStickWalk;
             rig.Resolve();
             var tone = systems.AddComponent<AudioSource>();
             tone.spatialBlend = 0f; tone.volume = 0.22f; tone.playOnAwake = false;
@@ -176,6 +182,11 @@ namespace MuseumOfLies.CentralHall.EditorTools
             var tr = WorldText("TruthPlacard", st, new Vector3(1.55f, landY + 1.5f, HalfD - 0.02f), 500, 260, MuseumUIBuilder.KrRegular, 30, MuseumPalette.Charcoal, TextAlignmentOptions.TopLeft,
                 "<size=24>05 — THE TRUTH ROOM</size>\n<b>진실의 방</b>\n<size=24>네 개의 전시를 모두 관람한 뒤 열립니다.</size>");
             Placard(tr.transform.parent, 0.52f, 0.28f);
+
+            // invisible blocker across the whole stair foot (walking is on; the Truth Room stays closed)
+            var blocker = new GameObject("StairBlocker"); blocker.transform.SetParent(st, false);
+            blocker.transform.localPosition = new Vector3(0, 1.5f, StairZ0 - 0.4f);
+            blocker.AddComponent<BoxCollider>().size = new Vector3(StairW + 0.8f, 3f, 0.3f);
 
             // velvet rope at the foot of the stairs (classic museum barrier)
             var ropeMat = HallMaterial("M_CH_Velvet", new Color(0.43f, 0.12f, 0.14f), 0.35f, 0f);
@@ -227,7 +238,6 @@ namespace MuseumOfLies.CentralHall.EditorTools
             var v = new GameObject("Vestibule").transform; v.SetParent(root, false);
             float d0 = WallT / 2, d1 = d0 + VestDepth, vw = DoorW + 0.4f, vh = DoorH + 0.2f;
             var vf = MuseumEnvironmentKit.WorldBox("Floor", v, new Vector3(0, -0.05f, (d0 + d1) / 2), new Vector3(vw, 0.1f, d1 - d0), Env("CorridorFloor"), MuseumEnvironmentKit.FloorTile);
-            vf.AddComponent<TeleportationArea>();
             MuseumEnvironmentKit.WorldBox("Ceiling", v, new Vector3(0, vh + 0.05f, (d0 + d1) / 2), new Vector3(vw, 0.1f, d1 - d0), Env("CorridorCeiling"), CT);
             MuseumEnvironmentKit.WorldBox("Wall_L", v, new Vector3(-vw / 2 - 0.1f, vh / 2, (d0 + d1) / 2), new Vector3(0.2f, vh, d1 - d0), Env("CorridorWall"), CT);
             MuseumEnvironmentKit.WorldBox("Wall_R", v, new Vector3(vw / 2 + 0.1f, vh / 2, (d0 + d1) / 2), new Vector3(0.2f, vh, d1 - d0), Env("CorridorWall"), CT);
@@ -241,7 +251,11 @@ namespace MuseumOfLies.CentralHall.EditorTools
             gate.comingSoon = soon;
             gate.comingSoonRoot = soonRoot.gameObject;
             soonRoot.gameObject.SetActive(false);
-            gate.enterDepth = 1.6f;
+            gate.enterDepth = 1.0f; // one step past the door frame = enter
+
+            // identical floor mark in front of every door: "stand here and it opens" (no hint about the content)
+            MuseumEnvironmentKit.WorldBox("Mat_Outer", root, new Vector3(0, 0.003f, -1.1f), new Vector3(1.8f, 0.006f, 1.2f), M("Charcoal"), 1f);
+            MuseumEnvironmentKit.WorldBox("Mat_Inner", root, new Vector3(0, 0.004f, -1.1f), new Vector3(1.72f, 0.006f, 1.12f), Env("FloorPolished"), MuseumEnvironmentKit.FloorTile);
 
             // identical placard beside the door on the atrium side (no number, no colour, no name)
             var plc = WorldText("Placard", root, new Vector3(DoorW / 2 + 0.75f, 1.45f, -0.215f), 460, 220, MuseumUIBuilder.KrRegular, 30, MuseumPalette.Charcoal, TextAlignmentOptions.TopLeft,
@@ -300,6 +314,11 @@ namespace MuseumOfLies.CentralHall.EditorTools
             var ort = (RectTransform)ok.transform;
             ort.anchorMin = ort.anchorMax = Vector2.zero; ort.pivot = Vector2.zero; ort.anchoredPosition = new Vector2(P, 56);
             survey.confirmButton = okb;
+
+            var how = MuseumUIBuilder.Text("HowTo", root, MuseumUIBuilder.KrRegular, MuseumTypeScale.Caption, MuseumPalette.Charcoal, TextAlignmentOptions.TopLeft,
+                "<b>이동</b> 왼쪽 스틱   ·   <b>회전</b> 오른쪽 스틱\n<b>입장</b> 문 앞 표시에 서면 문이 열리고, 안으로 걸어 들어가면 전시가 시작됩니다.");
+            how.lineSpacing = 12;
+            MuseumUIBuilder.TopLeft(how.rectTransform, P, 470, W - 2 * P, 90);
             return survey;
         }
 

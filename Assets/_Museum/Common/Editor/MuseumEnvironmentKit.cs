@@ -18,9 +18,10 @@ namespace MuseumOfLies.EditorTools
         const string TexDir = "Assets/_Museum/Common/Textures/Env/";
         const string MatDir = "Assets/_Museum/Common/Materials/";
 
-        public const float ConcreteTile = 2.4f;   // meters covered by one concrete texture repeat
+        public const float ConcreteTile = 4f;     // meters covered by one concrete texture repeat (Poly Haven "concrete" = 4 m)
         public const float CeilingTile = 1.2f;    // one ceiling light panel
-        public const float FloorTile = 3f;
+        public const float FloorTile = 3f;        // Poly Haven "concrete_floor_worn_001" = 3 m
+        const string PhDir = "Assets/_Museum/Common/Textures/Env/PolyHaven/";
 
         public static Material Mat(string envName)
         {
@@ -37,19 +38,36 @@ namespace MuseumOfLies.EditorTools
             if (!AssetDatabase.IsValidFolder("Assets/_Museum/Common/Textures")) AssetDatabase.CreateFolder("Assets/_Museum/Common", "Textures");
             if (!AssetDatabase.IsValidFolder("Assets/_Museum/Common/Textures/Env")) AssetDatabase.CreateFolder("Assets/_Museum/Common/Textures", "Env");
 
-            var concrete = SaveTex("T_Concrete", ConcreteTexture(1024, 11), false);
-            var concreteN = SaveTex("T_Concrete_N", ConcreteTexture(1024, 11), true);
-            var floor = SaveTex("T_FloorPolished", FloorTexture(1024, 23), false);
             var ceiling = SaveTex("T_CeilingPanel", CeilingTexture(512), false);
 
-            Lit("Concrete", MuseumPalette.ConcreteWall, concrete, concreteN, 0.12f, 0f, 0.6f);
-            Lit("ConcreteDark", MuseumPalette.ConcreteDark, concrete, concreteN, 0.12f, 0f, 0.6f);
-            Lit("FloorPolished", Color.white, floor, null, 0.92f, 0.55f, 0f); // metallic boost = visible polished reflections from the baked probe
+            if (AssetDatabase.LoadAssetAtPath<Texture2D>(PhDir + "concrete_diff_2k.jpg") != null)
+            {
+                // Photographic CC0 PBR (Poly Haven): albedo matched to the palette token, roughness → smoothness (alpha)
+                var wallAS = AlbedoSmooth("T_Concrete_AlbedoSmooth", PhDir + "concrete_diff_2k.jpg", PhDir + "concrete_rough_2k.jpg", MuseumPalette.ConcreteWall, 0.05f, 0.45f);
+                var floorAS = AlbedoSmooth("T_Floor_AlbedoSmooth", PhDir + "concrete_floor_worn_001_diff_2k.jpg", PhDir + "concrete_floor_worn_001_rough_2k.jpg", MuseumPalette.FloorPolished, 0.55f, 0.95f);
+                var wallN = ImportLinear(PhDir + "concrete_nor_gl_2k.jpg", true);
+                var floorN = ImportLinear(PhDir + "concrete_floor_worn_001_nor_gl_2k.jpg", true);
+                var wallAO = ImportLinear(PhDir + "concrete_ao_2k.jpg", false);
+                var floorAO = ImportLinear(PhDir + "concrete_floor_worn_001_ao_2k.jpg", false);
+                Pbr("Concrete", Color.white, wallAS, wallN, wallAO, 1f, 0f, 1f);
+                Pbr("ConcreteDark", MuseumPalette.ConcreteDark / Mathf.Max(0.01f, MuseumPalette.ConcreteWall.grayscale) * 0.95f, wallAS, wallN, wallAO, 1f, 0f, 1f);
+                Pbr("FloorPolished", Color.white, floorAS, floorN, floorAO, 1f, 0.35f, 0.5f); // smoothness from map; light metallic = readable probe reflections
+            }
+            else
+            {
+                // Fallback: procedural textures (no external files)
+                var concrete = SaveTex("T_Concrete", ConcreteTexture(1024, 11), false);
+                var concreteN = SaveTex("T_Concrete_N", ConcreteTexture(1024, 11), true);
+                var floor = SaveTex("T_FloorPolished", FloorTexture(1024, 23), false);
+                Lit("Concrete", MuseumPalette.ConcreteWall, concrete, concreteN, 0.12f, 0f, 0.6f);
+                Lit("ConcreteDark", MuseumPalette.ConcreteDark, concrete, concreteN, 0.12f, 0f, 0.6f);
+                Lit("FloorPolished", Color.white, floor, null, 0.92f, 0.55f, 0f);
+            }
             // Light sources use Unlit: always read as luminous, no emission-keyword fragility, cheaper on Quest.
             Unlit("CeilingLight", MuseumPalette.LightCoolWhite, ceiling);
             Lit("Door", MuseumPalette.DoorSteel, null, null, 0.45f, 0.35f, 0f);
             Lit("CorridorWall", MuseumPalette.CorridorWall, null, null, 0.2f, 0f, 0f);
-            Lit("CorridorFloor", MuseumPalette.CorridorFloor, floor, null, 0.88f, 0.4f, 0f);
+            Lit("CorridorFloor", MuseumPalette.CorridorFloor, null, null, 0.88f, 0.4f, 0f);
             Lit("CorridorCeiling", MuseumPalette.CorridorCeiling, null, null, 0.1f, 0f, 0f);
             Unlit("LightStrip", MuseumPalette.LightCoolWhite, null);
             AssetDatabase.SaveAssets();
@@ -75,6 +93,70 @@ namespace MuseumOfLies.EditorTools
             else { m.SetTexture("_BumpMap", null); m.DisableKeyword("_NORMALMAP"); }
             m.enableInstancing = true;
             if (isNew) AssetDatabase.CreateAsset(m, path); else EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        /// <summary>
+        /// Builds RGB = albedo scaled so its mean matches `target` (palette token), A = smoothness remapped from (1 - roughness).
+        /// Keeps the photo's real variation while the overall tone follows the design system.
+        /// </summary>
+        static Texture2D AlbedoSmooth(string outName, string diffPath, string roughPath, Color target, float smoothMin, float smoothMax)
+        {
+            var diff = ReadPixels(diffPath, out int w, out int h);
+            var rough = ReadPixels(roughPath, out int rw, out int rh);
+            double mr = 0, mg = 0, mb = 0;
+            foreach (var c in diff) { mr += c.r; mg += c.g; mb += c.b; }
+            int n = diff.Length;
+            float sr = target.r / (float)(mr / n), sg = target.g / (float)(mg / n), sb = target.b / (float)(mb / n);
+            var px = new Color[n];
+            for (int i = 0; i < n; i++)
+            {
+                var c = diff[i];
+                float r = rough[(i % w) * rw / w + (i / w) * rh / h * rw].r;
+                px[i] = new Color(Mathf.Clamp01(c.r * sr), Mathf.Clamp01(c.g * sg), Mathf.Clamp01(c.b * sb), Mathf.Lerp(smoothMin, smoothMax, 1f - r));
+            }
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            tex.SetPixels(px); tex.Apply();
+            string path = TexDir + outName + ".png";
+            File.WriteAllBytes(path, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(path);
+            var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+            imp.wrapMode = TextureWrapMode.Repeat; imp.mipmapEnabled = true; imp.anisoLevel = 4; imp.maxTextureSize = 2048;
+            imp.alphaSource = TextureImporterAlphaSource.FromInput; imp.alphaIsTransparency = false;
+            imp.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        static Color[] ReadPixels(string assetPath, out int w, out int h)
+        {
+            var t = new Texture2D(2, 2, TextureFormat.RGBA32, false, true);
+            t.LoadImage(File.ReadAllBytes(assetPath));
+            w = t.width; h = t.height;
+            var px = t.GetPixels();
+            Object.DestroyImmediate(t);
+            return px;
+        }
+
+        static Texture2D ImportLinear(string path, bool normal)
+        {
+            var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+            imp.wrapMode = TextureWrapMode.Repeat; imp.mipmapEnabled = true; imp.maxTextureSize = 2048;
+            if (normal) imp.textureType = TextureImporterType.NormalMap;
+            else imp.sRGBTexture = false;
+            imp.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        static Material Pbr(string name, Color tint, Texture2D albedoSmooth, Texture2D normal, Texture2D ao, float smoothScale, float metal, float aoStrength)
+        {
+            var m = Lit(name, tint, albedoSmooth, normal, smoothScale, metal, 1f);
+            m.SetFloat("_SmoothnessTextureChannel", 1f);               // smoothness from albedo alpha
+            m.EnableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
+            m.SetTexture("_OcclusionMap", ao);
+            m.SetFloat("_OcclusionStrength", aoStrength);
+            if (ao) m.EnableKeyword("_OCCLUSIONMAP");
+            EditorUtility.SetDirty(m);
             return m;
         }
 

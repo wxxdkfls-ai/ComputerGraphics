@@ -15,6 +15,10 @@
 - 공통 UI(버튼, 패널, 타이머 등)는 `Assets/_Museum/Common/Prefabs/UI/`의 프리팹을 재사용하고, 새로 필요하면 그곳에 공용으로 만든다.
 - 점멸, 강제 카메라 이동/회전, 과도한 전환 효과 금지.
 
+## 햅틱·조작 (필수)
+- 진동은 `MuseumHaptics`(UI 확인/진행/실패/성공/신체 접촉/환경 진동)로만 호출. 컨트롤러 진동 API 직접 호출 금지. hover·근접 진동 금지(유혹 물체 단서).
+- 조작은 `XRRig.locomotion`으로만: 허브 = 왼쪽 스틱 걷기 + 오른쪽 스냅 회전, 전시실 = 이동 없음. 텔레포트 쓰지 않음. 레이는 직선 4 m.
+
 ## 폴더 / 협업 규칙 (머지 충돌 방지)
 - 공용: `Assets/_Museum/Common/` (Scripts, Materials, Prefabs, Fonts, Icons)
 - 체험관별: `Assets/_Museum/Halls/01_Weight`, `02_Body`, `03_Ability`, `04_DoNothing`, `00_CentralHall`, `05_TruthRoom`

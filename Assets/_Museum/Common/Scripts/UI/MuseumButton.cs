@@ -25,7 +25,11 @@ namespace MuseumOfLies.Common
 
         public Button Button => _button != null ? _button : (_button = GetComponent<Button>());
 
-        void Awake() { Apply(); }
+        void Awake()
+        {
+            Apply();
+            if (Application.isPlaying) Button.onClick.AddListener(MuseumHaptics.UITick); // 햅틱 역할: UI 확인
+        }
         void OnValidate() { Apply(); }
 
         public void SetText(string text, string iconGlyph = null)

@@ -48,7 +48,7 @@ namespace MuseumOfLies.DoNothing
             _time = 0f;
             for (int i = 0; i < _tiles.Count; i++) { var x = _tiles[i]; x.vel = 0f; _tiles[i] = x; }
             if (rumbleAudio) rumbleAudio.Play();
-            if (Rig) Rig.HapticBoth(0.35f, 1.2f);
+            MuseumHaptics.Rumble();
             Game.LogEvent("floor_collapse", $"tiles={_tiles.Count}");
         }
 

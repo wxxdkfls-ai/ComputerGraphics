@@ -193,9 +193,9 @@ git clone https://github.com/Ohmyjiwon/museum-of-lies-vr.git ~/UnityProjects/mus
 ## 6-A. 00 중앙 홀 — 구현 상세
 
 - **공간:** 18 × 24 m, 천장 10 m 노출 콘크리트 아트리움. 발광 천장 격자, 열주 2줄 × 5, 북쪽 대계단(20단) → 랜딩의 **진실의 방 문(잠김, 벨벳 로프)**, 타이틀 벽("THE MUSEUM OF LIES / 거짓말하는 박물관 / 당신은 당신을 얼마나 믿습니까?"), 벤치, **빈 좌대 2개**("이 자리의 전시물은 아직 도착하지 않았습니다" — 마지막 반전의 복선 [새 제안])
-- **네 개의 문:** 서쪽 벽 L1(앞)·L2(뒤), 동쪽 벽 R1·R2. **모양·안내판·조명이 완전히 동일**하고 번호·색·전시명 없음. 다가가면(2.6 m) 양쪽으로 열리는 **자동 슬라이딩 도어** + 공압음. 문 뒤는 4 m 짧은 통로(아무것도 보이지 않음) → 1.6 m 들어가면 짧은 암전 후 해당 전시 씬으로 이동
+- **네 개의 문:** 서쪽 벽 L1(앞)·L2(뒤), 동쪽 벽 R1·R2. **모양·안내판·조명이 완전히 동일**하고 번호·색·전시명 없음. 문 앞 바닥 표시에 서면(2.6 m) 양쪽으로 열리는 **자동 슬라이딩 도어** + 공압음. 문 뒤는 4 m 짧은 통로(아무것도 보이지 않음) → **한 걸음(1 m) 들어가면** 짧은 암전 후 해당 전시 씬으로 이동. 시작 위치에 조작 안내판
 - **어느 문 뒤에 무엇이 있는지는 방문마다 무작위** (`MuseumSession.Begin(randomize)`) → "첫 선택"이 전시 내용이 아니라 **문 위치·시선·동선**을 반영하게 됨. 고정하려면 `CentralHallController.randomizeMapping` 해제
-- **이동:** 텔레포트(스틱 앞으로) + 스냅 회전만. 부드러운 이동은 끔(멀미 방지). 전시실 안에서는 이동 없음
+- **이동:** **왼쪽 스틱으로 걷기**(1.4 m/s) + 오른쪽 스틱 스냅 회전. 텔레포트 없음. 전시실 안에서는 이동 없음
 - **입장 질문(원안 §5.4):** 시작 위치 앞 패널, 1~7 선택 → `MuseumSession.EntryConfidence`
 - **돌아오기:** 전시 결과에서 "→ 박물관으로" → 들어갔던 문 앞에 서서 복귀, 그 문 안내판이 **✓ 관람 완료**로 바뀜. 아직 안 만든 전시의 문은 통로 끝에 "준비 중" 안내
 - **기록** `ExperimentLogs/CentralHall_*.csv`: `visit_start`(배정 매핑), `entry_confidence`, `door_open`(어느 문이 열렸나 = 다가간 순서), `gate_enter`(문 위치·전시·순서·첫 선택 여부·**첫 선택 전 각 문을 바라본 시간 gaze=L1:x|L2:x|R1:x|R2:x**), `return`
@@ -293,7 +293,10 @@ Claude에게: *"DoNothing Play 해서 BeginSession 호출하고 _attemptTime을 
 | 타이머·수치 | Space Mono Bold | Numeric 240 |
 모든 폰트는 OFL(무료·임베드 가능). 한글은 Pretendard가 기본·폴백.
 
-### 7.4 UI 프리팹 (`Assets/_Museum/Common/Prefabs/UI/`)
+### 7.4 햅틱 & 조작
+역할별 햅틱 어휘와 조작 규칙은 [`Docs/DESIGN_GUIDELINES.md`](Docs/DESIGN_GUIDELINES.md) › *Haptics*, *Controls* 참고. 요약: 진동은 `MuseumHaptics`로만(UI 확인 / 진행 / 실패 / 성공 / 신체 접촉 / 환경 진동), XRI 기본 hover·select 진동은 꺼짐. 허브는 왼쪽 스틱 걷기 + 오른쪽 스냅 회전, 레이는 직선 4 m.
+
+### 7.5 UI 프리팹 (`Assets/_Museum/Common/Prefabs/UI/`)
 `UI_Button_Primary` `UI_Button_Secondary` `UI_Button_Exit` `UI_Button_Disabled` `UI_ProgressBar` `UI_InstructionPanel` `UI_Timer` `UI_ResultPanel` `UI_ExitHold`
 - 모두 World Space Canvas(TrackedDeviceGraphicRaycaster), 1.5~2m 거리 배치 기준
 - 정보 배치: 제목 → 핵심 정보 → 설명 → 행동 버튼
@@ -423,4 +426,5 @@ CLAUDE.md                        Claude Code 자동 규칙
 ### 크레딧
 - 폰트: Pretendard, Space Grotesk, Space Mono — SIL Open Font License 1.1 (`Assets/_Museum/Common/Fonts/FONT_LICENSES.txt`)
 - XR: Unity XR Interaction Toolkit Starter Assets
-- 효과음·텍스처: 코드로 생성 (`ProceduralSfx`, `MuseumEnvironmentKit`)
+- 콘크리트 텍스처: [Poly Haven](https://polyhaven.com) `concrete`, `concrete_floor_worn_001` — CC0
+- 효과음·천장 텍스처: 코드로 생성 (`ProceduralSfx`, `MuseumEnvironmentKit`)
