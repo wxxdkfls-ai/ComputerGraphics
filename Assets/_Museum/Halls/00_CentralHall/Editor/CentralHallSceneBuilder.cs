@@ -237,9 +237,11 @@ namespace MuseumOfLies.CentralHall.EditorTools
 
             // sliding leaves
             var door = root.gameObject.AddComponent<AutoDoor>();
-            // light gray leaves with a visible centre seam (1 cm gap)
-            var l = MuseumEnvironmentKit.WorldBox("Leaf_L", root, new Vector3(-DoorW / 4 - 0.005f, DoorH / 2, 0.2f), new Vector3(DoorW / 2 - 0.01f, DoorH, 0.06f), M("LightGray"), 1f, true, false);
-            var r = MuseumEnvironmentKit.WorldBox("Leaf_R", root, new Vector3(DoorW / 4 + 0.005f, DoorH / 2, 0.2f), new Vector3(DoorW / 2 - 0.01f, DoorH, 0.06f), M("LightGray"), 1f, true, false);
+            // light gray leaves that close fully (no light leak); the centre seam is a thin charcoal line riding on the left leaf
+            var l = MuseumEnvironmentKit.WorldBox("Leaf_L", root, new Vector3(-DoorW / 4, DoorH / 2, 0.2f), new Vector3(DoorW / 2, DoorH, 0.06f), M("LightGray"), 1f, true, false);
+            var r = MuseumEnvironmentKit.WorldBox("Leaf_R", root, new Vector3(DoorW / 4, DoorH / 2, 0.2f), new Vector3(DoorW / 2, DoorH, 0.06f), M("LightGray"), 1f, true, false);
+            var seam = MuseumEnvironmentKit.WorldBox("Seam", l.transform, new Vector3(DoorW / 4 - 0.004f, 0, -0.032f), new Vector3(0.006f, DoorH, 0.004f), M("Charcoal"), 1f, false, false);
+            Object.DestroyImmediate(seam.GetComponent<BoxCollider>());
             door.leafLeft = l.transform; door.leafRight = r.transform; door.slide = DoorW / 2 - 0.04f;
             var a = root.gameObject.AddComponent<AudioSource>();
             a.playOnAwake = false; a.spatialBlend = 1f; a.minDistance = 1f; a.maxDistance = 15f; a.volume = 0.8f;
