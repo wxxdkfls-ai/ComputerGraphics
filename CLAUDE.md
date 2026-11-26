@@ -32,6 +32,13 @@
 - OpenXR 1.19 버그: Project Settings 창이 열려 있고 선택된 빌드 타깃이 Android가 아니면 MetaQuestFeature NullReference가 반복 → Play 중 Error Pause로 멈춤. 창을 닫거나 `EditorUserBuildSettings.selectedBuildTargetGroup = Android`.
 - 시뮬레이터 Play 중 Game 뷰가 뿌옇게 보이는 것은 시뮬레이터 오버레이 UI 때문 (헤드셋에서는 정상).
 
+## GitHub 동기화 (필수)
+- 원격: `cg` = https://github.com/wxxdkfls-ai/ComputerGraphics (팀 공용), `origin` = 개인 백업 저장소.
+- **작업 시작 전** `git pull --rebase cg main` (팀원 변경 받기).
+- **기능 단위 작업이 끝나고 콘솔 컴파일 에러 0개**이면 바로 커밋한다 (씬 저장 `SaveOpenScenes` 후). 깨진 상태로 커밋하지 않는다.
+- 이 컴퓨터는 `.git/hooks/post-commit`이 커밋마다 `cg`·`origin`에 자동 push한다 (결과: `.git/autopush.log`). 실패 시 `git pull --rebase cg main` 후 다시 push.
+- 커밋 메시지는 한국어로 무엇을 왜 바꿨는지 한두 줄.
+
 ## 기술 원칙
 - 시간 기반 로직은 `Time.deltaTime`, 물리는 `FixedUpdate`.
 - 실제 머리 추적 = 가상 카메라. 카메라 강제 이동 금지.
