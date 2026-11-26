@@ -1,0 +1,4 @@
+All fonts in this folder are licensed under the SIL Open Font License 1.1 (free to use and embed).
+- Space Grotesk  : https://github.com/floriankarsten/space-grotesk
+- Space Mono     : https://github.com/googlefonts/spacemono
+- Pretendard     : https://github.com/orioncactus/pretendard
