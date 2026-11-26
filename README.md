@@ -44,14 +44,16 @@
 ## 2. 빠른 시작
 
 ```bash
-git clone https://github.com/Ohmyjiwon/museum-of-lies-vr.git ~/UnityProjects/museum-of-lies-vr
+git clone https://github.com/wxxdkfls-ai/ComputerGraphics.git ~/UnityProjects/ComputerGraphics
 ```
 
 > 📁 **프로젝트를 iCloud/OneDrive 동기화 폴더(바탕화면, 문서)에 두지 말 것.** 동기화가 파일을 비워서 컴파일이 깨진다 (§11).
 
+먼저 **Git**을 설치하고 저장소 접근 권한을 확인한다. 패키지에 Git URL이 포함되어 있어 Unity가 패키지를 복원할 때도 Git이 필요하다. `Assets/`, `Packages/`, `ProjectSettings/`와 `.meta`를 그대로 사용하고 설정/샘플/씬을 다시 생성하지 않는다. Unity MCP와 Claude Code 연결은 선택 사항이며 일반 Unity 개발에는 필요하지 않다.
+
 1. **Unity Hub → Add → 클론한 폴더** 선택 → 에디터 **6000.3.29f1** 로 연다. (첫 실행은 Library 생성으로 5~10분)
 2. 메뉴 **File ▸ Build Profiles → Android → Switch Platform** (빌드 타깃은 저장소에 저장되지 않아 각자 1회 필요)
-3. `Assets/_Museum/Halls/04_DoNothing/DoNothing.unity` 열고 **Play**
+3. `Assets/_Museum/Halls/00_CentralHall/CentralHall.unity` 열고 **Play** (4관만 테스트하려면 `Assets/_Museum/Halls/04_DoNothing/DoNothing.unity`)
    - 헤드셋 없이 **XR Interaction Simulator**가 자동으로 켜진다 (키보드·마우스로 머리/손 조작)
    - 에디터에서 나가기 = **Esc 2초** (헤드셋에서는 B/Y 2초)
 4. 헤드셋 실행: Quest를 USB로 연결 → **File ▸ Build And Run** (또는 Claude에게 "빌드앤런 해줘")
@@ -84,7 +86,7 @@ git clone https://github.com/Ohmyjiwon/museum-of-lies-vr.git ~/UnityProjects/mus
 | 성능 | SSAO 제거, 후처리(Bloom 등) 미사용, 반사 프로브 Box Projection + Blending ON |
 | 시뮬레이터 | `Assets/XRI/Settings/Resources/XRDeviceSimulatorSettings.asset` — 에디터에서만 자동 생성 |
 | TMP | Essential Resources 임포트됨, **기본 폰트 = Pretendard** (한글 □ 깨짐 방지) |
-| 빌드 씬 | `DoNothing.unity` (0번), `XR_Base.unity` |
+| 빌드 씬 | `CentralHall.unity` (0번), `DoNothing.unity` |
 
 ### 3.3 각자 1회 해야 하는 셋팅 (Library에 저장되는 값)
 - **빌드 플랫폼 Android 전환** (위 2번)
@@ -108,7 +110,7 @@ git clone https://github.com/Ohmyjiwon/museum-of-lies-vr.git ~/UnityProjects/mus
 1. Unity 프로젝트를 열면 **MCP for Unity** 패키지가 로컬 HTTP 서버(`http://127.0.0.1:8080/mcp`)를 띄운다 (Window ▸ MCP for Unity에서 상태 확인. 첫 실행은 의존성 설치로 1분 정도)
 2. 프로젝트 폴더에서 Claude Code 등록 (1회):
    ```bash
-   cd ~/UnityProjects/museum-of-lies-vr
+   cd ~/UnityProjects/ComputerGraphics
    claude mcp add --transport http UnityMCP http://127.0.0.1:8080/mcp
    ```
 3. Claude Code를 **프로젝트 폴더에서** 실행. 연결이 끊기면 `/mcp` → UnityMCP → Reconnect
@@ -416,7 +418,8 @@ CLAUDE.md                        Claude Code 자동 규칙
 - [ ] 파일럿 테스트 → 자극 단계별 초기화·반사 반응 비율 비교
 
 **박물관 전체**
-- [ ] 00 중앙 홀 (복도 무드, 네 체험관 문 + 진실의 방 문, 체험 완료 상태 저장)
+- [x] 00 중앙 홀 (아트리움, 네 체험관 게이트, 입장 질문)
+- [ ] 진실의 방 연결 및 전체 체험 완료 흐름
 - [ ] 입장 질문 / 진실의 방 (각 홀 CSV → 개인 기록 전시 → 같은 질문 재질문)
 - [ ] 01 무게, 02 신체, 03 능력 구현 (원안 유지)
 - [ ] 홀 간 이동(문 → 씬 전환, 페이드는 짧게, 카메라 강제 이동 없이)
