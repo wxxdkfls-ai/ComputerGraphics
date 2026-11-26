@@ -20,6 +20,26 @@ namespace MuseumOfLies.CentralHall
         public Transform returnSpawn;              // where the player stands when coming back out of this gate
         public float enterDepth = 1.6f;
 
+        [Header("Gate sign (colour + number follow the hall assigned at runtime)")]
+        public Renderer band;                      // big colour band with "GATE 0N"
+        public Renderer accentStrip;               // thin colour strip under the white line
+        public TMP_Text gateLabel;
+        [Tooltip("Accent materials in MuseumSession.HallIds order: Weight, Body, Ability, DoNothing")]
+        public Material[] hallMaterials = new Material[4];
+
+        public int GateNumber { get; private set; }
+
+        /// <summary>Paint the gate for the hall behind it: GATE 01 Weight (orange) … GATE 04 DoNothing (red).</summary>
+        public void ApplyHall(string hallId)
+        {
+            int i = System.Array.IndexOf(Common.MuseumSession.HallIds, hallId);
+            if (i < 0) return;
+            GateNumber = i + 1;
+            if (band && hallMaterials[i]) band.sharedMaterial = hallMaterials[i];
+            if (accentStrip && hallMaterials[i]) accentStrip.sharedMaterial = hallMaterials[i];
+            if (gateLabel) gateLabel.text = $"GATE {GateNumber:00}";
+        }
+
         public bool Completed { get; private set; }
 
         public void SetCompleted(bool done)

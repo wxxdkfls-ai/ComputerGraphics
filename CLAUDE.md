@@ -30,7 +30,7 @@
 - `Museum ▸ Build Environment Materials` → `Assets/_Museum/Common/Editor/MuseumEnvironmentKit.cs` (콘크리트/천장/바닥/문 머티리얼·텍스처. 새 방은 `WorldBox`, `Door`, `ApplyGalleryLighting`, `BakeProbe`로 만든다)
 - `Museum ▸ Build Common UI Prefabs` → `Assets/_Museum/Common/Editor/MuseumUIBuilder.cs` (공통 UI 프리팹 재생성, GUID 유지)
 - `Museum ▸ Build Scene ▸ 00 Central Hall` → `Assets/_Museum/Halls/00_CentralHall/Editor/CentralHallSceneBuilder.cs` (앱 시작 씬, 빌드 0번 유지)
-- 전시 간 이동은 `MuseumSession`(문↔전시 무작위 배정·방문 순서) + `SceneTransition.Load()`만 사용. 문에 전시 단서(번호·색·이름)를 넣지 않는다.
+- 전시 간 이동은 `MuseumSession`(문↔전시 무작위 배정·방문 순서) + `SceneTransition.Load()`만 사용. 게이트 색·번호(GATE 01 무게 주황 … 04 DO NOTHING 빨강)는 `Gate.ApplyHall`로 런타임에 칠한다 — 위치에 하드코딩하지 말 것. 전시 이름은 문에 표시하지 않는다.
 - `Museum ▸ Build Scene ▸ 04 DoNothing` → `Assets/_Museum/Halls/04_DoNothing/Editor/DoNothingSceneBuilder.cs` (씬을 처음부터 다시 만듦 — 씬에서 손으로 고친 내용은 사라지므로, 수정은 빌더 코드에 반영)
 - 폰트: `Assets/_Museum/Common/Fonts/*SDF.asset` (Pretendard가 TMP 기본 폰트이자 한글 폴백)
 

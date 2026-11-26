@@ -222,12 +222,24 @@ namespace MuseumOfLies.CentralHall.EditorTools
             MuseumEnvironmentKit.WorldBox("Jamb_L", root, new Vector3(-DoorW / 2 - 0.05f, DoorH / 2, 0.2f), new Vector3(0.1f, DoorH, 0.42f), Env("ConcreteDark"), CT);
             MuseumEnvironmentKit.WorldBox("Jamb_R", root, new Vector3(DoorW / 2 + 0.05f, DoorH / 2, 0.2f), new Vector3(0.1f, DoorH, 0.42f), Env("ConcreteDark"), CT);
             MuseumEnvironmentKit.WorldBox("Head", root, new Vector3(0, DoorH + 0.05f, 0.2f), new Vector3(DoorW + 0.2f, 0.1f, 0.42f), Env("ConcreteDark"), CT);
-            MuseumEnvironmentKit.WorldBox("LightLine", root, new Vector3(0, DoorH + 0.16f, -0.21f), new Vector3(DoorW, 0.03f, 0.02f), Env("LightStrip"), 1f);
+
+            // gate sign (design: colour band "GATE 0N" → white line → thin colour strip → light gray double door)
+            float sw = DoorW + 0.2f, fz = -0.215f;
+            var strip = MuseumEnvironmentKit.WorldBox("Sign_AccentStrip", root, new Vector3(0, DoorH + 0.05f, fz), new Vector3(sw, 0.1f, 0.03f), M("Charcoal"), 1f);
+            MuseumEnvironmentKit.WorldBox("Sign_WhiteLine", root, new Vector3(0, DoorH + 0.125f, fz), new Vector3(sw, 0.05f, 0.03f), M("Ivory"), 1f);
+            var band = MuseumEnvironmentKit.WorldBox("Sign_Band", root, new Vector3(0, DoorH + 0.4f, fz), new Vector3(sw, 0.5f, 0.03f), M("Charcoal"), 1f);
+            var lab = WorldText("Sign_Label", root, new Vector3(0, DoorH + 0.4f, fz - 0.02f), 2400, 500, MuseumUIBuilder.EnBold, 300, MuseumPalette.Black, TextAlignmentOptions.Center, "GATE 00");
+            lab.textWrappingMode = TextWrappingModes.NoWrap;
+            gate.band = band.GetComponent<Renderer>();
+            gate.accentStrip = strip.GetComponent<Renderer>();
+            gate.gateLabel = lab;
+            gate.hallMaterials = new[] { M("Weight"), M("Body"), M("Ability"), M("DoNothing") };
 
             // sliding leaves
             var door = root.gameObject.AddComponent<AutoDoor>();
-            var l = MuseumEnvironmentKit.WorldBox("Leaf_L", root, new Vector3(-DoorW / 4, DoorH / 2, 0.2f), new Vector3(DoorW / 2, DoorH, 0.06f), Env("Door"), 1f, true, false);
-            var r = MuseumEnvironmentKit.WorldBox("Leaf_R", root, new Vector3(DoorW / 4, DoorH / 2, 0.2f), new Vector3(DoorW / 2, DoorH, 0.06f), Env("Door"), 1f, true, false);
+            // light gray leaves with a visible centre seam (1 cm gap)
+            var l = MuseumEnvironmentKit.WorldBox("Leaf_L", root, new Vector3(-DoorW / 4 - 0.005f, DoorH / 2, 0.2f), new Vector3(DoorW / 2 - 0.01f, DoorH, 0.06f), M("LightGray"), 1f, true, false);
+            var r = MuseumEnvironmentKit.WorldBox("Leaf_R", root, new Vector3(DoorW / 4 + 0.005f, DoorH / 2, 0.2f), new Vector3(DoorW / 2 - 0.01f, DoorH, 0.06f), M("LightGray"), 1f, true, false);
             door.leafLeft = l.transform; door.leafRight = r.transform; door.slide = DoorW / 2 - 0.04f;
             var a = root.gameObject.AddComponent<AudioSource>();
             a.playOnAwake = false; a.spatialBlend = 1f; a.minDistance = 1f; a.maxDistance = 15f; a.volume = 0.8f;

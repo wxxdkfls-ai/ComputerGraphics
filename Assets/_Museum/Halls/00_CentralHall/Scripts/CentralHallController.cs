@@ -54,10 +54,11 @@ namespace MuseumOfLies.CentralHall
 
             foreach (var g in gates)
             {
+                g.ApplyHall(MuseumSession.GateToHall[g.index]);
                 g.SetCompleted(MuseumSession.Completed.Contains(MuseumSession.GateToHall[g.index]));
                 g.ShowComingSoon(false);
                 var gate = g;
-                g.door.Opened += () => _log.Log(MuseumSession.GateOrder.Count, Time.time - _t0, "door_open", $"gate={gate.positionLabel}");
+                g.door.Opened += () => _log.Log(MuseumSession.GateOrder.Count, Time.time - _t0, "door_open", $"gate={gate.positionLabel};gate_no={gate.GateNumber:00}");
             }
 
             // spawn: in front of the gate you came out of, otherwise the entrance
@@ -106,9 +107,9 @@ namespace MuseumOfLies.CentralHall
             if (!available && _unavailableShown.Contains(g.index)) return;
             if (!available) _unavailableShown.Add(g.index);
             int order = MuseumSession.GateOrder.Count + 1;
-            string gaze = _choiceMade ? "" : ";gaze=" + string.Join("|", gates.OrderBy(x => x.index).Select(x => $"{x.positionLabel}:{_gaze[x.index]:F1}"));
+            string gaze = _choiceMade ? "" : ";gaze=" + string.Join("|", gates.OrderBy(x => x.index).Select(x => $"{x.positionLabel}/G{x.GateNumber:00}:{_gaze[x.index]:F1}"));
             _log.Log(order, Time.time - _t0, available ? "gate_enter" : "gate_enter_unavailable",
-                $"gate={g.positionLabel};hall={hall};order={order};first_choice={(!_choiceMade)}{gaze}");
+                $"gate={g.positionLabel};gate_no={g.GateNumber:00};hall={hall};order={order};first_choice={(!_choiceMade)}{gaze}");
 
             if (!available) { g.ShowComingSoon(true); return; }  // hall not built yet → message at the vestibule end
             _entering = true;
